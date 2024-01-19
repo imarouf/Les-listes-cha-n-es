@@ -245,9 +245,10 @@ void SupprimerElement(MAIL **pt_tete)
 
 void LireFichier(FILE *fichier)
 {
-    /*while (fscanf(fichier, "%s %d %d", pt_tete->nom, pt_tete->nombre, pt_tete->suiv) != EOF)
+    if (fichier == NULL)
     {
-    }*/
+        
+    }
 }
 
 void EcrireFichier(FILE *fichier, MAIL *pt_tete)
