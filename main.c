@@ -23,7 +23,7 @@ void AfficherListe(MAIL *pt_tete);
 void RechercherElement(MAIL *pt_tete);
 void SupprimerElement(MAIL **pt_tete);
 // Fonctions relatives aux fichiers
-void LireFichier(FILE *fichier);
+MAIL *LireFichier(FILE *fichier);
 void EcrireFichier(FILE *fichier, MAIL *pt_tete);
 
 int main()
@@ -81,13 +81,14 @@ int main()
         case 7:
             SupprimerElement(&pt_tete);
             break;
-        default:
-            break;
         case 8:
             EcrireFichier(fichier, pt_tete);
             break;
-        case 9 : 
-            LireFichier(fichier);
+        case 9:
+            pt_tete=LireFichier(fichier);
+            break;
+        default:
+            break;
         }
     } while (choix != 0);
     fclose(fichier);
@@ -148,7 +149,7 @@ MAIL *InsererMaillonBonnePlace(MAIL *pt_tete, MAIL *nouveau_maillon)
     MAIL *pt_prec, *pt_courant = pt_tete;
     if (pt_tete == NULL)
     {
-        printf("\n == Maillon <%s> inséré en tête car la liste est vide ! ==  ", nouveau_maillon->nom);
+        printf("\n == Maillon <%s> inséré en tête ! ==  ", nouveau_maillon->nom);
         return nouveau_maillon;
     }
     while ((pt_prec != NULL) && (strcmp(pt_courant->nom, nouveau_maillon->nom) <= 0))
@@ -243,25 +244,51 @@ void SupprimerElement(MAIL **pt_tete)
     }
 }
 
-void LireFichier(FILE *fichier)
+MAIL *LireFichier(FILE *fichier)
 {
-    if (fichier == NULL)
+    MAIL tmp;
+    MAIL *pt_tete = NULL;
+    MAIL *pt_nouveau = NULL;
+    rewind(fichier);
+
+    memset(&tmp, '\0', sizeof(MAIL));
+
+    while (fread(&tmp, sizeof(MAIL), 1, fichier))
     {
-        
+        if (NULL == (pt_nouveau = (MAIL *)malloc(sizeof(MAIL))))
+        {
+            printf("\nErreur à la création du maillon");
+            break;
+        }
+        else
+        {
+            *pt_nouveau = tmp;
+            pt_nouveau->suiv = NULL;
+            pt_tete = InsererMaillonBonnePlace(pt_tete, pt_nouveau);
+            memset(&tmp, '\0', sizeof(MAIL));
+        }
     }
+    return pt_tete;
 }
 
 void EcrireFichier(FILE *fichier, MAIL *pt_tete)
 {
+    int i = 0;
     if (fichier == NULL)
     {
-        printf("Erreur : impossible d'ouvrir dans le fichier");
+        printf("Erreur : impossible d'ouvrir dans le fichier\n");
+        return;
     }
     rewind(fichier);
     while (pt_tete != NULL)
     {
-        fwrite(pt_tete, sizeof(MAIL), 1, fichier);
+        i = fwrite(pt_tete, sizeof(MAIL), 1, fichier);
+        if (i != 1)
+        {
+            printf("Erreur lors de l'écriture");
+        }
         // Passage au maillon suivant
         pt_tete = pt_tete->suiv;
     }
+    printf("La liste chaînée à bien été écrit dans le fichier");
 }
